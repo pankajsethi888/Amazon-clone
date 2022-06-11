@@ -3,15 +3,43 @@ import Header from "./Header.js";
 import Home from "./Home";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Checkout from "./Checkout";
+import Login from "./Login";
+import { useEffect } from "react";
+import { auth } from "./firebase";
+import { useStateValue } from "./StateProvider";
 
 function App() {
+  const [{}, dispatch] = useStateValue();
+
+  useEffect(() => {
+    auth.onAuthStateChanged((authUser) => {
+      console.log("THE USER IS >>>", authUser);
+
+      if (authUser) {
+        // the user just logged in / the user was logged in
+
+        dispatch({
+          type: "SET_USER",
+          user: authUser,
+        });
+      } else {
+        // the user is logged out
+
+        dispatch({
+          type: "SET_USER",
+          user: null,
+        });
+      }
+    });
+  }, []); // runs once when App component loads...
+
   return (
     <Router>
       <div className="App">
-        <Header />
         <Routes>
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/checkout" element={[<Header />, <Checkout />]} />
+          <Route path="/" element={[<Header />, <Home />]} />
         </Routes>
       </div>
     </Router>
